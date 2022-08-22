@@ -7,10 +7,16 @@ import { userContext } from '../App';
 import { Archive } from '@daml.js/d14e08374fc7197d6a0de468c968ae8ba3aadbf9315476fd39071831f5923662/lib/DA/Internal/Template';
 
 const {AssetHoldingAccount, AssetHoldingAccountProposal, AssetInSwap, Trade, TransferPreApproval, AssetHoldingAccountCloseProposal, AirdropRequest } = Account
-
+const {Transfer}=Asset
 export const useGetAllAssetHoldingAccounts = () => {
   const myPartyId = userContext.useParty();
   const res = userContext.useStreamQueries(AssetHoldingAccount, () => [{ owner: myPartyId }]);
+  return res
+}
+
+export const useGetAllTransfer = () => {
+  const myPartyId = userContext.useParty();
+  const res = userContext.useStreamQueries(Transfer, () => [{ from: myPartyId }]);
   return res
 }
 

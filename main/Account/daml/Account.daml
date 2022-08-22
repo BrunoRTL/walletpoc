@@ -70,7 +70,7 @@ template AssetHoldingAccount with
 
     -- A choice for issuer to aidrop the Asset into owner's account.
     -- This choice can also be used by the issuer to mint asset into own account.
-    nonconsuming choice Airdrop : ContractId Asset
+    nonconsuming choice Airdrop : (ContractId Asset, ContractId Transfer)
       with
         amount : Decimal
       controller assetType.issuer 
@@ -79,12 +79,16 @@ template AssetHoldingAccount with
           airdroppable || assetType.issuer==owner
         assertMsg "Cannot create airdrop. The amount of non fungible asset must be 1.0" $ 
           assetType.fungible || amount==1.0
-        create Asset with
+        createAsset <- create Asset with
           assetType
           owner
           amount
           observers = Set.empty
-
+        createTransfer <- create Transfer with
+          from = assetType.issuer
+          to = owner
+          transferType= "Airdrop"
+        return(createAsset,createTransfer)
     -- This choice consolidates the input set of assets in the account and from the total amount
     -- creates new set of Asset contracts in the desired input amounts plus one more Asset with the remaining amount
     -- The purpose is to create Asset contracts in desired denomination from the list of assets in the account
@@ -159,7 +163,7 @@ template AssetHoldingAccount with
 
     -- The purpose of this choice is to obtain issuer's authority required to accept the transfer.
     -- This construct ensures that transfers cannot be made to a party without an AssetHoldingAccount corresponding to the asset
-    nonconsuming choice Deposit_Transfer_Into_Account : ()
+    nonconsuming choice Deposit_Transfer_Into_Account : ContractId Asset
       with
         transferCid : ContractId AssetTransfer
       controller owner 
@@ -436,7 +440,7 @@ template AirdropRequest with
   where
     signatory requester
     observer assetHoldingAccountIssuer
-    choice AirdropRequest_Accept: ContractId Asset    
+    choice AirdropRequest_Accept:(ContractId Asset, ContractId Transfer)  
       controller assetHoldingAccountIssuer
       do
         exercise assetHoldingAccountCid Airdrop with

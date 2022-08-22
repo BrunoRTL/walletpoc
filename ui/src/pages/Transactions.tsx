@@ -5,7 +5,7 @@ import { usePageStyles } from "./AssetProfilePage";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { useNavigate } from "react-router-dom";
 import { isMobile } from "../platform/platform";
-import {useGetMyTransactionsByAssetType} from "../ledgerHooks/ledgerHooks"
+import {useGetAllAssetHoldingAccounts, useGetAllTransfer, useGetMyTransactionsByAssetType} from "../ledgerHooks/ledgerHooks"
 
 
 
@@ -37,7 +37,9 @@ import { userContext } from "../App";
 import { useCustomAdminParty } from "../hooks/useCustomAdminParty";
 import { useGetUrlParams } from "../hooks/useGetAllUrlParams";
 import { PageWrapper } from "../components/PageWrapper/PageWrapper";
-
+import {Asset} from "@daml.js/asset";
+import {Transfer} from "@daml.js/account";
+import { useStreamQueries } from "@daml/react";
 export const Transactions: React.FC = () => {
   const nav = useNavigate();
 
@@ -45,26 +47,9 @@ export const Transactions: React.FC = () => {
   const onClick = () => {
     nav(-1);
   };
-  const params = useGetUrlParams();
-  const { search } = useLocation();
-  const party = userContext.useParty();
-  const reference = params.reference as string | null;
-  const issuer = params.issuer as string;
-  const symbol = params.symbol as string;
-  const owner = params.owner as string;
-  const isShareable = params.isShareable as boolean;
-  const isAirdroppable = params.isAirdroppable as boolean;
-  const isFungible = params.isFungible as boolean;
-  const { loading, contracts } = useGetMyTransactionsByAssetType({
-    reference,
-    issuer,
-    symbol,
-    isFungible,
-    owner,
-});
 
-  console.log("Here" , contracts);
-
+  const { loading, contracts } = useGetAllTransfer();
+console.log("Hello ", contracts)
   return (
     <div className={classes.root}>
       <Box
